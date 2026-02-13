@@ -5,115 +5,296 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Balanceador óptimo de trabajos</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; max-width: 1000px; }
-    h1 { margin: 0 0 12px; font-size: 22px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 10px 0; }
-    textarea { width: 100%; min-height: 220px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; padding: 10px; }
-    input[type="number"] { width: 100px; padding: 6px; }
-    button { padding: 10px 14px; cursor: pointer; }
-    .note { font-size: 13px; color: #444; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    .ok { color: #0a7; }
-    .bad { color: #c33; }
-    @media (max-width: 900px){ .grid { grid-template-columns: 1fr; } }
+    :root{
+      --bg:#0b0d12;
+      --panel:#121623;
+      --panel2:#0f1320;
+      --text:#e9eefc;
+      --muted:#a9b4d0;
+      --line:rgba(255,255,255,.10);
+      --line2:rgba(255,255,255,.14);
+      --accent:#7aa2ff;
+      --ok:#33d1a0;
+      --bad:#ff5d5d;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --radius: 14px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 15% 0%, rgba(122,162,255,.18), transparent 60%),
+                  radial-gradient(900px 500px at 90% 15%, rgba(51,209,160,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .wrap{ max-width: 1100px; margin: 28px auto; padding: 0 18px 40px; }
+    .top{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:18px; flex-wrap:wrap;
+      margin-bottom: 14px;
+    }
+    h1{ margin:0; font-size: 22px; letter-spacing:.2px; }
+    .sub{ margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.35; max-width: 780px; }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px; border:1px solid var(--line); border-radius:999px;
+      background: rgba(255,255,255,.04);
+      color: var(--muted); font-size:12px;
+    }
+    .grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap:14px; }
+    @media (max-width: 980px){ .grid{ grid-template-columns:1fr; } }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+      background: rgba(0,0,0,.15);
+    }
+    .card-h b{ font-size:13px; letter-spacing:.2px; }
+    .card-b{ padding: 14px; }
+
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .field{
+      display:flex; flex-direction:column; gap:6px;
+      min-width: 160px;
+    }
+    label{ font-size:12px; color: var(--muted); }
+    input[type="number"], input[type="text"]{
+      width:100%;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 10px;
+      color: var(--text);
+      outline:none;
+    }
+    input::placeholder{ color: rgba(233,238,252,.35); }
+    input:focus{ border-color: rgba(122,162,255,.55); box-shadow: 0 0 0 3px rgba(122,162,255,.18); }
+
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .04s ease, border-color .15s ease, background .15s ease;
+      font-weight: 600;
+      letter-spacing:.2px;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      border-color: rgba(122,162,255,.45);
+      background: rgba(122,162,255,.14);
+    }
+    .btn.good{
+      border-color: rgba(51,209,160,.45);
+      background: rgba(51,209,160,.12);
+    }
+    .btn.bad{
+      border-color: rgba(255,93,93,.45);
+      background: rgba(255,93,93,.10);
+    }
+    .btn.icon{
+      width:42px; padding:10px 0; display:inline-grid; place-items:center;
+    }
+
+    .hint{
+      font-size:12px; color: var(--muted); line-height:1.4;
+      margin-top:10px;
+    }
+    .hint code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+    }
+
+    .list{
+      display:flex; flex-direction:column; gap:10px;
+      margin-top: 10px;
+    }
+    .rowItem{
+      display:grid;
+      grid-template-columns: 1fr 150px 44px;
+      gap:10px;
+      align-items:center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0,0,0,.18);
+    }
+    @media (max-width: 720px){
+      .rowItem{ grid-template-columns: 1fr; }
+      .rowItem .del{ justify-self:end; }
+    }
+    .mini{ font-size:12px; color: var(--muted); margin-top:8px; }
+    .status{ font-size:12px; margin-top:10px; color: var(--muted); }
+    .ok{ color: var(--ok); }
+    .badTxt{ color: var(--bad); }
+    .errBox{
+      display:none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,93,93,.55);
+      background: rgba(255,93,93,.08);
+      white-space: pre-wrap;
+      font-size:12px;
+      line-height:1.35;
+    }
+
+    pre{
+      margin:0;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:12px;
+      line-height:1.4;
+    }
+
+    .footerBtns{ display:flex; gap:10px; flex-wrap:wrap; }
   </style>
 </head>
 <body>
-  <h1>Balanceador óptimo de trabajos (K equipos)</h1>
-
-  <div class="note">
-    Formato: una línea por trabajo. Ejemplos:
-    <span class="mono">A 1.37</span> (horas decimales),
-    <span class="mono">B 2:25</span> (h:mm),
-    <span class="mono">C 0:55</span>.
-    Separadores: espacio o coma.
-  </div>
-
-  <div class="row">
-    <label>Equipos (K): <input id="k" type="number" min="1" value="2"></label>
-    <label>Precisión (minutos por unidad): <input id="quant" type="number" min="1" value="1"></label>
-    <button id="solveBtn">Resolver óptimo</button>
-    <button id="demoBtn" type="button">Cargar demo</button>
-  </div>
-
-  <textarea id="jobs" placeholder="A 1.37&#10;B 2.41&#10;C 0:55"></textarea>
-
-  <div id="status" class="note"></div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="note"><b>Resultado</b></div>
-      <pre id="out" class="mono" style="white-space: pre-wrap; margin: 8px 0 0;"></pre>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Balanceador óptimo de trabajos</h1>
+        <div class="sub">
+          Añade trabajos con nombre y duración. Duración aceptada: <code>1.56</code> (horas decimales) o <code>2:25</code> (h:mm).
+          Luego elige K equipos y resuelve.
+        </div>
+      </div>
+      <div class="pill">
+        Óptimo = minimiza el tiempo del equipo más cargado
+      </div>
     </div>
-    <div class="card">
-      <div class="note"><b>Copiar como texto</b></div>
-      <button id="copyBtn" type="button">Copiar resultado</button>
-      <pre id="copyOut" class="mono" style="white-space: pre-wrap; margin: 8px 0 0;"></pre>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-h">
+          <b>Trabajos</b>
+          <div class="footerBtns">
+            <button id="addBtn" class="btn icon primary" type="button" title="Añadir trabajo">+</button>
+            <button id="demoBtn" class="btn" type="button">Demo</button>
+            <button id="clearBtn" class="btn bad" type="button">Vaciar</button>
+          </div>
+        </div>
+        <div class="card-b">
+          <div class="controls">
+            <div class="field" style="flex:1; min-width:260px;">
+              <label>Nombre</label>
+              <input id="nameIn" type="text" placeholder="Ej: 4567 Dinasty Road" />
+            </div>
+            <div class="field" style="min-width:190px;">
+              <label>Duración</label>
+              <input id="durIn" type="text" placeholder="Ej: 1.56 o 2:25" />
+            </div>
+            <div style="align-self:end;">
+              <button id="addBtn2" class="btn primary" type="button">Añadir</button>
+            </div>
+          </div>
+
+          <div class="hint">
+            Tip: si tu duración viene como “7.8” eso significa 7.8 horas (7h 48m). Si quieres 7h 08m usa <code>7:08</code>.
+          </div>
+
+          <div class="list" id="list"></div>
+          <div class="mini" id="countInfo"></div>
+
+          <div class="errBox" id="errBox"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <b>Resolver</b>
+          <div class="footerBtns">
+            <button id="solveBtn" class="btn good" type="button">Resolver óptimo</button>
+            <button id="copyBtn" class="btn" type="button">Copiar resultado</button>
+          </div>
+        </div>
+        <div class="card-b">
+          <div class="controls">
+            <div class="field">
+              <label>Equipos (K)</label>
+              <input id="k" type="number" min="1" value="2" />
+            </div>
+            <div class="field">
+              <label>Precisión (min/unidad)</label>
+              <input id="quant" type="number" min="1" value="1" />
+            </div>
+          </div>
+
+          <div class="status" id="status"></div>
+          <pre id="out"></pre>
+        </div>
+      </div>
     </div>
   </div>
 
 <script>
 (function(){
-  const elJobs = document.getElementById('jobs');
-  const elK = document.getElementById('k');
-  const elQuant = document.getElementById('quant');
-  const elOut = document.getElementById('out');
-  const elCopyOut = document.getElementById('copyOut');
-  const elStatus = document.getElementById('status');
+  const $ = (id) => document.getElementById(id);
 
-  document.getElementById('demoBtn').addEventListener('click', () => {
-    elJobs.value =
-`A 1.37
-B 2.41
-C 0:55
-D 1.25
-E 0.80
-F 1:10
-G 0:40
-H 1.90`;
-  });
+  const elList = $('list');
+  const elCount = $('countInfo');
+  const elErr = $('errBox');
+  const elOut = $('out');
+  const elStatus = $('status');
 
-  document.getElementById('copyBtn').addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(elCopyOut.textContent || '');
-      elStatus.innerHTML = '<span class="ok">Copiado.</span>';
-    } catch {
-      elStatus.innerHTML = '<span class="bad">No se pudo copiar (permiso del navegador).</span>';
-    }
-  });
+  const elNameIn = $('nameIn');
+  const elDurIn = $('durIn');
+
+  let jobs = [];
+  let jobId = 1;
+
+  function showError(msg){
+    elErr.style.display = 'block';
+    elErr.textContent = msg;
+  }
+  function clearError(){
+    elErr.style.display = 'none';
+    elErr.textContent = '';
+  }
 
   function parseTimeToMinutes(s){
-    s = String(s).trim();
+    s = String(s ?? '').trim();
+    if (!s) throw new Error('Duración vacía');
+
     if (s.includes(':')) {
-      const [h,m] = s.split(':');
-      const hh = parseInt(h.trim(),10);
-      const mm = parseInt(m.trim(),10);
+      const parts = s.split(':');
+      if (parts.length !== 2) throw new Error('Tiempo inválido: ' + s);
+      const hh = parseInt(parts[0].trim(),10);
+      const mm = parseInt(parts[1].trim(),10);
       if (!Number.isFinite(hh) || !Number.isFinite(mm)) throw new Error('Tiempo inválido: ' + s);
+      if (mm < 0 || mm > 59) throw new Error('Minutos deben ser 0..59: ' + s);
       return hh*60 + mm;
     }
+
     // horas decimales
     s = s.replace(',', '.');
     const hours = parseFloat(s);
     if (!Number.isFinite(hours)) throw new Error('Tiempo inválido: ' + s);
-    return Math.round(hours*60);
-  }
-
-  function parseJobs(text){
-    const lines = text.split(/\r?\n/);
-    const jobs = [];
-    for (const ln of lines){
-      const t = ln.trim();
-      if (!t) continue;
-      const parts = t.split(/[,\s]+/).filter(Boolean);
-      if (parts.length < 2) throw new Error('Línea inválida: ' + ln);
-      const name = parts[0];
-      const minutes = parseTimeToMinutes(parts[1]);
-      if (minutes <= 0) throw new Error('Tiempo <= 0: ' + ln);
-      jobs.push({name, minutes});
-    }
-    return jobs;
+    const minutes = Math.round(hours * 60);
+    if (minutes <= 0) throw new Error('Duración debe ser > 0');
+    return minutes;
   }
 
   function hhmm(min){
@@ -122,20 +303,112 @@ H 1.90`;
     return `${h}:${String(m).padStart(2,'0')}`;
   }
 
-  // Branch & Bound óptimo: minimizar makespan para K máquinas idénticas
-  // Con simetrías: cargas ordenadas, evita permutar equipos equivalentes.
-  function solveOptimal(jobs, K, quant){
-    // cuantización (por defecto 1 min); si pones 5, acelera pero ya no es exacto al minuto
+  function render(){
+    elList.innerHTML = '';
+
+    jobs.forEach((j) => {
+      const row = document.createElement('div');
+      row.className = 'rowItem';
+
+      const name = document.createElement('input');
+      name.type = 'text';
+      name.value = j.name;
+      name.placeholder = 'Nombre';
+      name.addEventListener('input', () => { j.name = name.value; });
+
+      const dur = document.createElement('input');
+      dur.type = 'text';
+      dur.value = j.durRaw;
+      dur.placeholder = 'Duración (1.56 o 2:25)';
+      dur.addEventListener('input', () => { j.durRaw = dur.value; });
+
+      const del = document.createElement('button');
+      del.className = 'btn icon bad del';
+      del.type = 'button';
+      del.textContent = '✕';
+      del.title = 'Eliminar';
+      del.addEventListener('click', () => {
+        jobs = jobs.filter(x => x.id !== j.id);
+        render();
+      });
+
+      row.appendChild(name);
+      row.appendChild(dur);
+      row.appendChild(del);
+      elList.appendChild(row);
+    });
+
+    elCount.textContent = `Trabajos: ${jobs.length}`;
+  }
+
+  function addJob(name, durRaw){
+    clearError();
+    const n = String(name ?? '').trim();
+    const d = String(durRaw ?? '').trim();
+    if (!n) throw new Error('Falta el nombre');
+    // valida duración al agregar (así no te enteras hasta resolver)
+    parseTimeToMinutes(d);
+
+    jobs.push({ id: jobId++, name: n, durRaw: d });
+    render();
+  }
+
+  function addFromInputs(){
+    try{
+      addJob(elNameIn.value, elDurIn.value);
+      elNameIn.value = '';
+      elDurIn.value = '';
+      elNameIn.focus();
+    } catch(e){
+      showError(e && e.message ? e.message : String(e));
+    }
+  }
+
+  $('addBtn').addEventListener('click', addFromInputs);
+  $('addBtn2').addEventListener('click', addFromInputs);
+
+  elDurIn.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') addFromInputs();
+  });
+  elNameIn.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') elDurIn.focus();
+  });
+
+  $('clearBtn').addEventListener('click', () => {
+    jobs = [];
+    render();
+    elOut.textContent = '';
+    elStatus.textContent = '';
+    clearError();
+  });
+
+  $('demoBtn').addEventListener('click', () => {
+    jobs = [
+      {id: jobId++, name:'4567 Dinasty Road', durRaw:'1.56'},
+      {id: jobId++, name:'Cableado cocina', durRaw:'2:15'},
+      {id: jobId++, name:'Pintura recámara', durRaw:'3.10'},
+      {id: jobId++, name:'Limpieza patio', durRaw:'0:45'},
+      {id: jobId++, name:'Instalación lámparas', durRaw:'1:20'},
+      {id: jobId++, name:'Revisión plomería', durRaw:'2.05'},
+    ];
+    render();
+    clearError();
+  });
+
+  function solveOptimal(jobsMinutes, K, quant){
     const q = Math.max(1, quant|0);
 
-    const items = jobs
+    const minMap = new Map();
+    for (const j of jobsMinutes) minMap.set(j.name, j.minutes);
+
+    const items = jobsMinutes
       .map(j => ({name: j.name, w: Math.max(1, Math.round(j.minutes / q))}))
       .sort((a,b)=>b.w-a.w);
 
     const n = items.length;
     const total = items.reduce((s,x)=>s+x.w,0);
 
-    // bound inicial: greedy LPT para tener un upper bound bueno
+    // Upper bound inicial (LPT)
     const loads0 = Array(K).fill(0);
     const assign0 = Array.from({length: K}, ()=>[]);
     for (const it of items){
@@ -147,21 +420,14 @@ H 1.90`;
     let bestMakespan = Math.max(...loads0);
     let bestAssign = assign0.map(a=>a.slice());
 
-    // lower bound global (promedio)
     const avgLB = Math.ceil(total / K);
 
-    // estado
     const loads = Array(K).fill(0);
     const assign = Array.from({length: K}, ()=>[]);
 
-    // Para poda: suma restante
-    const suffixSum = Array(n+1).fill(0);
-    for (let i=n-1;i>=0;i--) suffixSum[i] = suffixSum[i+1] + items[i].w;
-
-    // truco: memo simple por (idx, loads sorted) para podar estados repetidos
     const seen = new Set();
-    function key(idx, loadsArr){
-      const sorted = loadsArr.slice().sort((a,b)=>a-b).join(',');
+    function key(idx){
+      const sorted = loads.slice().sort((a,b)=>a-b).join(',');
       return idx + '|' + sorted;
     }
 
@@ -175,30 +441,23 @@ H 1.90`;
         return;
       }
 
-      // bound: mejor posible no puede ser menor que avgLB ni menor que max(loads)
       const currentMax = Math.max(...loads);
       const lb = Math.max(avgLB, currentMax);
       if (lb >= bestMakespan) return;
 
-      // otro bound: aunque repartas perfecto lo restante, el max no puede bajar de:
-      // max(currentMax, ceil((sumRemaining + sumLoads)/K)) == ceil(total/K) ya considerado
-      // Poda por estado repetido
-      const k = key(idx, loads);
+      const k = key(idx);
       if (seen.has(k)) return;
       seen.add(k);
 
       const it = items[idx];
 
-      // simetría: si dos equipos tienen misma carga, probar solo uno para este item
-      const tried = new Set();
-
-      // ordena equipos por carga asc para intentar rellenar primero los menos cargados
+      const triedLoads = new Set();
       const order = Array.from({length: K}, (_,i)=>i).sort((a,b)=>loads[a]-loads[b]);
 
       for (const i of order){
         const L = loads[i];
-        if (tried.has(L)) continue;
-        tried.add(L);
+        if (triedLoads.has(L)) continue;
+        triedLoads.add(L);
 
         const newLoad = L + it.w;
         if (newLoad >= bestMakespan) continue;
@@ -206,92 +465,105 @@ H 1.90`;
         loads[i] = newLoad;
         assign[i].push(it);
 
-        // bound extra: si el máximo ya se acerca al best y además queda poco por repartir, igual poda simple
         dfs(idx+1);
 
         assign[i].pop();
         loads[i] = L;
 
-        // si este equipo estaba vacío y no funcionó, no pruebes otros vacíos (simetría fuerte)
-        if (L === 0) break;
+        if (L === 0) break; // simetría: equipos vacíos equivalentes
       }
     }
 
     dfs(0);
 
-    // reconstruir a minutos reales
     const teams = bestAssign.map(team => {
-      const jobsTeam = team.map(it => {
-        const original = jobs.find(j=>j.name===it.name);
-        return { name: it.name, minutes: original ? original.minutes : it.w*q };
-      });
+      const jobsTeam = team.map(it => ({ name: it.name, minutes: minMap.get(it.name) ?? it.w*q }));
       jobsTeam.sort((a,b)=>b.minutes-a.minutes);
       const sumMin = jobsTeam.reduce((s,x)=>s+x.minutes,0);
       return { jobs: jobsTeam, totalMinutes: sumMin };
     });
 
-    // makespan en minutos reales (recalcular con minutos originales)
-    const makespanMinutes = Math.max(...teams.map(t=>t.totalMinutes));
-    return { teams, makespanMinutes, quantMinutes: q };
+    return { teams };
   }
 
-  document.getElementById('solveBtn').addEventListener('click', () => {
-    try {
-      elOut.textContent = '';
-      elCopyOut.textContent = '';
-      elStatus.textContent = 'Resolviendo (óptimo)...';
-
-      const K = parseInt(elK.value, 10);
-      const quant = parseInt(elQuant.value, 10);
+  $('solveBtn').addEventListener('click', () => {
+    clearError();
+    elOut.textContent = '';
+    try{
+      const K = parseInt($('k').value, 10);
+      const quant = parseInt($('quant').value, 10);
       if (!Number.isFinite(K) || K < 1) throw new Error('K inválido');
       if (!Number.isFinite(quant) || quant < 1) throw new Error('Precisión inválida');
-
-      const jobs = parseJobs(elJobs.value);
       if (jobs.length === 0) throw new Error('No hay trabajos');
 
-      // Aviso honesto: óptimo puede explotar en n grande
-      if (jobs.length > 80 && quant === 1){
-        elStatus.innerHTML = '<span class="bad">Advertencia:</span> con muchos trabajos, resolver óptimo al minuto puede tardar bastante. Si tarda, sube "Precisión" a 2, 5 o 10 para acelerar (ya no sería exacto al minuto).';
+      // materializa minutos y valida todo
+      const jobsMinutes = jobs.map((j, idx) => {
+        const name = String(j.name ?? '').trim();
+        if (!name) throw new Error(`Trabajo ${idx+1}: falta nombre`);
+        const minutes = parseTimeToMinutes(j.durRaw);
+        return { name, minutes };
+      });
+
+      if (jobsMinutes.length > 90 && quant === 1){
+        elStatus.innerHTML = `<span class="badTxt">Advertencia:</span> con muchos trabajos, óptimo al minuto puede tardar. Sube Precisión a 5 o 10 si se tarda.`;
       } else {
         elStatus.textContent = 'Resolviendo (óptimo)...';
       }
 
-      // Ejecuta en el event loop para que se pinte status
       setTimeout(() => {
-        const t0 = performance.now();
-        const res = solveOptimal(jobs, K, quant);
-        const t1 = performance.now();
+        try{
+          const t0 = performance.now();
+          const res = solveOptimal(jobsMinutes, K, quant);
+          const t1 = performance.now();
 
-        const totals = res.teams.map(t=>t.totalMinutes);
-        const minT = Math.min(...totals);
-        const maxT = Math.max(...totals);
+          const totals = res.teams.map(t=>t.totalMinutes);
+          const minT = Math.min(...totals);
+          const maxT = Math.max(...totals);
 
-        let out = '';
-        out += `Equipos: ${K}\n`;
-        out += `Trabajos: ${jobs.length}\n`;
-        out += `Makespan óptimo: ${maxT} min (${hhmm(maxT)})\n`;
-        out += `Min total: ${minT} min (${hhmm(minT)})\n`;
-        out += `Diferencia: ${maxT - minT} min (${hhmm(maxT - minT)})\n`;
-        out += `Tiempo de cómputo: ${Math.round(t1 - t0)} ms\n\n`;
+          let out = '';
+          out += `Equipos: ${K}\n`;
+          out += `Trabajos: ${jobsMinutes.length}\n`;
+          out += `Makespan óptimo: ${maxT} min (${hhmm(maxT)})\n`;
+          out += `Min total: ${minT} min (${hhmm(minT)})\n`;
+          out += `Diferencia: ${maxT - minT} min (${hhmm(maxT - minT)})\n`;
+          out += `Tiempo de cómputo: ${Math.round(t1 - t0)} ms\n\n`;
 
-        res.teams.forEach((team, idx) => {
-          out += `Equipo ${idx+1} | Total: ${team.totalMinutes} min (${hhmm(team.totalMinutes)})\n`;
-          team.jobs.forEach(j => {
-            out += `  - ${j.name}: ${j.minutes} min (${hhmm(j.minutes)})\n`;
+          res.teams.forEach((team, idx) => {
+            out += `Equipo ${idx+1} | Total: ${team.totalMinutes} min (${hhmm(team.totalMinutes)})\n`;
+            team.jobs.forEach(j => {
+              out += `  - ${j.name} - ${j.minutes} min (${hhmm(j.minutes)})\n`;
+            });
+            out += `\n`;
           });
-          out += `\n`;
-        });
 
-        elOut.textContent = out;
-        elCopyOut.textContent = out;
-        elStatus.innerHTML = '<span class="ok">Listo.</span>';
+          elOut.textContent = out;
+          elStatus.innerHTML = '<span class="ok">Listo.</span>';
+        } catch(e2){
+          elStatus.innerHTML = '<span class="badTxt">Error al resolver.</span>';
+          showError(e2 && e2.message ? e2.message : String(e2));
+        }
       }, 10);
 
-    } catch (e){
-      elStatus.innerHTML = '<span class="bad">Error:</span> ' + (e && e.message ? e.message : String(e));
+    } catch(e){
+      elStatus.innerHTML = '<span class="badTxt">Error.</span>';
+      showError(e && e.message ? e.message : String(e));
     }
   });
 
+  $('copyBtn').addEventListener('click', async () => {
+    try{
+      const text = elOut.textContent || '';
+      if (!text.trim()) throw new Error('No hay resultado para copiar');
+      await navigator.clipboard.writeText(text);
+      elStatus.innerHTML = '<span class="ok">Copiado.</span>';
+    } catch(e){
+      showError(e && e.message ? e.message : String(e));
+    }
+  });
+
+  // 1 fila inicial para guiar
+  jobs = [{ id: jobId++, name: '', durRaw: '' }];
+  render();
 })();
 </script>
 </body>
