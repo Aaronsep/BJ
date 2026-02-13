@@ -1,315 +1,298 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Contador de Cartas</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0a0e27;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            touch-action: manipulation;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 0 10px;
-        }
-
-        .stat-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        .stat-label {
-            font-size: 0.85em;
-            opacity: 0.9;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-        }
-
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 15px;
-        }
-
-        .deck-input {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-        }
-
-        .deck-input label {
-            color: white;
-            font-size: 1.1em;
-            font-weight: 600;
-        }
-
-        .deck-input input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            color: white;
-            font-size: 1.5em;
-            font-weight: bold;
-            text-align: center;
-            padding: 15px;
-            width: 80px;
-        }
-
-        .deck-input input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .buttons-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .card-button {
-            flex: 1;
-            border: none;
-            border-radius: 20px;
-            font-size: 2em;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            min-height: 120px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .card-button:active::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .card-button:active {
-            transform: scale(0.95);
-        }
-
-        .btn-low {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-
-        .btn-neutral {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-
-        .btn-high {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-
-        .card-range {
-            font-size: 1.2em;
-            letter-spacing: 2px;
-        }
-
-        .card-value {
-            font-size: 1.5em;
-            opacity: 0.9;
-        }
-
-        .reset-button {
-            background: linear-gradient(135deg, #434343 0%, #000000 100%);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-size: 1.3em;
-            font-weight: bold;
-            padding: 25px;
-            cursor: pointer;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            transition: all 0.2s ease;
-        }
-
-        .reset-button:active {
-            transform: scale(0.95);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Animación para el contador */
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .stat-value.changed {
-            animation: pulse 0.3s ease;
-        }
-
-        /* Remove number input arrows */
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Balanceador óptimo de trabajos</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; max-width: 1000px; }
+    h1 { margin: 0 0 12px; font-size: 22px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin: 10px 0; }
+    textarea { width: 100%; min-height: 220px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; padding: 10px; }
+    input[type="number"] { width: 100px; padding: 6px; }
+    button { padding: 10px 14px; cursor: pointer; }
+    .note { font-size: 13px; color: #444; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .ok { color: #0a7; }
+    .bad { color: #c33; }
+    @media (max-width: 900px){ .grid { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🃏 Contador de Cartas</h1>
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-label">Running Count</div>
-                <div class="stat-value" id="runningCount">0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">True Count</div>
-                <div class="stat-value" id="trueCount">0.0</div>
-            </div>
-        </div>
+  <h1>Balanceador óptimo de trabajos (K equipos)</h1>
+
+  <div class="note">
+    Formato: una línea por trabajo. Ejemplos:
+    <span class="mono">A 1.37</span> (horas decimales),
+    <span class="mono">B 2:25</span> (h:mm),
+    <span class="mono">C 0:55</span>.
+    Separadores: espacio o coma.
+  </div>
+
+  <div class="row">
+    <label>Equipos (K): <input id="k" type="number" min="1" value="2"></label>
+    <label>Precisión (minutos por unidad): <input id="quant" type="number" min="1" value="1"></label>
+    <button id="solveBtn">Resolver óptimo</button>
+    <button id="demoBtn" type="button">Cargar demo</button>
+  </div>
+
+  <textarea id="jobs" placeholder="A 1.37&#10;B 2.41&#10;C 0:55"></textarea>
+
+  <div id="status" class="note"></div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="note"><b>Resultado</b></div>
+      <pre id="out" class="mono" style="white-space: pre-wrap; margin: 8px 0 0;"></pre>
     </div>
-
-    <div class="content">
-        <div class="deck-input">
-            <label>Barajas:</label>
-            <input type="number" id="numBarajas" value="6" min="1" max="8" inputmode="numeric">
-        </div>
-
-        <div class="buttons-container">
-            <button class="card-button btn-low" onclick="contarCarta(1)">
-                <span class="card-range">2-6</span>
-                <span class="card-value">+1</span>
-            </button>
-
-            <button class="card-button btn-neutral" onclick="contarCarta(0)">
-                <span class="card-range">7-9</span>
-                <span class="card-value">0</span>
-            </button>
-
-            <button class="card-button btn-high" onclick="contarCarta(-1)">
-                <span class="card-range">10-A</span>
-                <span class="card-value">-1</span>
-            </button>
-        </div>
-
-        <button class="reset-button" onclick="resetear()">
-            🔄 RESET
-        </button>
+    <div class="card">
+      <div class="note"><b>Copiar como texto</b></div>
+      <button id="copyBtn" type="button">Copiar resultado</button>
+      <pre id="copyOut" class="mono" style="white-space: pre-wrap; margin: 8px 0 0;"></pre>
     </div>
+  </div>
 
-    <script>
-        let runningCount = 0;
+<script>
+(function(){
+  const elJobs = document.getElementById('jobs');
+  const elK = document.getElementById('k');
+  const elQuant = document.getElementById('quant');
+  const elOut = document.getElementById('out');
+  const elCopyOut = document.getElementById('copyOut');
+  const elStatus = document.getElementById('status');
 
-        function contarCarta(valor) {
-            runningCount += valor;
-            actualizarDisplay();
+  document.getElementById('demoBtn').addEventListener('click', () => {
+    elJobs.value =
+`A 1.37
+B 2.41
+C 0:55
+D 1.25
+E 0.80
+F 1:10
+G 0:40
+H 1.90`;
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(elCopyOut.textContent || '');
+      elStatus.innerHTML = '<span class="ok">Copiado.</span>';
+    } catch {
+      elStatus.innerHTML = '<span class="bad">No se pudo copiar (permiso del navegador).</span>';
+    }
+  });
+
+  function parseTimeToMinutes(s){
+    s = String(s).trim();
+    if (s.includes(':')) {
+      const [h,m] = s.split(':');
+      const hh = parseInt(h.trim(),10);
+      const mm = parseInt(m.trim(),10);
+      if (!Number.isFinite(hh) || !Number.isFinite(mm)) throw new Error('Tiempo inválido: ' + s);
+      return hh*60 + mm;
+    }
+    // horas decimales
+    s = s.replace(',', '.');
+    const hours = parseFloat(s);
+    if (!Number.isFinite(hours)) throw new Error('Tiempo inválido: ' + s);
+    return Math.round(hours*60);
+  }
+
+  function parseJobs(text){
+    const lines = text.split(/\r?\n/);
+    const jobs = [];
+    for (const ln of lines){
+      const t = ln.trim();
+      if (!t) continue;
+      const parts = t.split(/[,\s]+/).filter(Boolean);
+      if (parts.length < 2) throw new Error('Línea inválida: ' + ln);
+      const name = parts[0];
+      const minutes = parseTimeToMinutes(parts[1]);
+      if (minutes <= 0) throw new Error('Tiempo <= 0: ' + ln);
+      jobs.push({name, minutes});
+    }
+    return jobs;
+  }
+
+  function hhmm(min){
+    const h = Math.floor(min/60);
+    const m = min%60;
+    return `${h}:${String(m).padStart(2,'0')}`;
+  }
+
+  // Branch & Bound óptimo: minimizar makespan para K máquinas idénticas
+  // Con simetrías: cargas ordenadas, evita permutar equipos equivalentes.
+  function solveOptimal(jobs, K, quant){
+    // cuantización (por defecto 1 min); si pones 5, acelera pero ya no es exacto al minuto
+    const q = Math.max(1, quant|0);
+
+    const items = jobs
+      .map(j => ({name: j.name, w: Math.max(1, Math.round(j.minutes / q))}))
+      .sort((a,b)=>b.w-a.w);
+
+    const n = items.length;
+    const total = items.reduce((s,x)=>s+x.w,0);
+
+    // bound inicial: greedy LPT para tener un upper bound bueno
+    const loads0 = Array(K).fill(0);
+    const assign0 = Array.from({length: K}, ()=>[]);
+    for (const it of items){
+      let best = 0;
+      for (let i=1;i<K;i++) if (loads0[i] < loads0[best]) best = i;
+      loads0[best] += it.w;
+      assign0[best].push(it);
+    }
+    let bestMakespan = Math.max(...loads0);
+    let bestAssign = assign0.map(a=>a.slice());
+
+    // lower bound global (promedio)
+    const avgLB = Math.ceil(total / K);
+
+    // estado
+    const loads = Array(K).fill(0);
+    const assign = Array.from({length: K}, ()=>[]);
+
+    // Para poda: suma restante
+    const suffixSum = Array(n+1).fill(0);
+    for (let i=n-1;i>=0;i--) suffixSum[i] = suffixSum[i+1] + items[i].w;
+
+    // truco: memo simple por (idx, loads sorted) para podar estados repetidos
+    const seen = new Set();
+    function key(idx, loadsArr){
+      const sorted = loadsArr.slice().sort((a,b)=>a-b).join(',');
+      return idx + '|' + sorted;
+    }
+
+    function dfs(idx){
+      if (idx === n){
+        const mk = Math.max(...loads);
+        if (mk < bestMakespan){
+          bestMakespan = mk;
+          bestAssign = assign.map(a=>a.slice());
         }
+        return;
+      }
 
-        function actualizarDisplay() {
-            const rcElement = document.getElementById('runningCount');
-            const tcElement = document.getElementById('trueCount');
-            
-            // Animación
-            rcElement.classList.remove('changed');
-            tcElement.classList.remove('changed');
-            
-            setTimeout(() => {
-                rcElement.textContent = runningCount;
-                rcElement.classList.add('changed');
-                
-                calcularTrueCount();
-                tcElement.classList.add('changed');
-            }, 10);
-        }
+      // bound: mejor posible no puede ser menor que avgLB ni menor que max(loads)
+      const currentMax = Math.max(...loads);
+      const lb = Math.max(avgLB, currentMax);
+      if (lb >= bestMakespan) return;
 
-        function calcularTrueCount() {
-            const numBarajas = parseFloat(document.getElementById('numBarajas').value) || 1;
-            const tc = runningCount / numBarajas;
-            document.getElementById('trueCount').textContent = tc.toFixed(1);
-        }
+      // otro bound: aunque repartas perfecto lo restante, el max no puede bajar de:
+      // max(currentMax, ceil((sumRemaining + sumLoads)/K)) == ceil(total/K) ya considerado
+      // Poda por estado repetido
+      const k = key(idx, loads);
+      if (seen.has(k)) return;
+      seen.add(k);
 
-        function resetear() {
-            if (confirm('¿Reiniciar el contador?')) {
-                runningCount = 0;
-                actualizarDisplay();
-            }
-        }
+      const it = items[idx];
 
-        // Recalcular TC cuando cambie el número de barajas
-        document.getElementById('numBarajas').addEventListener('input', calcularTrueCount);
+      // simetría: si dos equipos tienen misma carga, probar solo uno para este item
+      const tried = new Set();
 
-        // Prevenir zoom en iOS al hacer doble tap
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
-            }
-            lastTouchEnd = now;
-        }, false);
-    </script>
+      // ordena equipos por carga asc para intentar rellenar primero los menos cargados
+      const order = Array.from({length: K}, (_,i)=>i).sort((a,b)=>loads[a]-loads[b]);
+
+      for (const i of order){
+        const L = loads[i];
+        if (tried.has(L)) continue;
+        tried.add(L);
+
+        const newLoad = L + it.w;
+        if (newLoad >= bestMakespan) continue;
+
+        loads[i] = newLoad;
+        assign[i].push(it);
+
+        // bound extra: si el máximo ya se acerca al best y además queda poco por repartir, igual poda simple
+        dfs(idx+1);
+
+        assign[i].pop();
+        loads[i] = L;
+
+        // si este equipo estaba vacío y no funcionó, no pruebes otros vacíos (simetría fuerte)
+        if (L === 0) break;
+      }
+    }
+
+    dfs(0);
+
+    // reconstruir a minutos reales
+    const teams = bestAssign.map(team => {
+      const jobsTeam = team.map(it => {
+        const original = jobs.find(j=>j.name===it.name);
+        return { name: it.name, minutes: original ? original.minutes : it.w*q };
+      });
+      jobsTeam.sort((a,b)=>b.minutes-a.minutes);
+      const sumMin = jobsTeam.reduce((s,x)=>s+x.minutes,0);
+      return { jobs: jobsTeam, totalMinutes: sumMin };
+    });
+
+    // makespan en minutos reales (recalcular con minutos originales)
+    const makespanMinutes = Math.max(...teams.map(t=>t.totalMinutes));
+    return { teams, makespanMinutes, quantMinutes: q };
+  }
+
+  document.getElementById('solveBtn').addEventListener('click', () => {
+    try {
+      elOut.textContent = '';
+      elCopyOut.textContent = '';
+      elStatus.textContent = 'Resolviendo (óptimo)...';
+
+      const K = parseInt(elK.value, 10);
+      const quant = parseInt(elQuant.value, 10);
+      if (!Number.isFinite(K) || K < 1) throw new Error('K inválido');
+      if (!Number.isFinite(quant) || quant < 1) throw new Error('Precisión inválida');
+
+      const jobs = parseJobs(elJobs.value);
+      if (jobs.length === 0) throw new Error('No hay trabajos');
+
+      // Aviso honesto: óptimo puede explotar en n grande
+      if (jobs.length > 80 && quant === 1){
+        elStatus.innerHTML = '<span class="bad">Advertencia:</span> con muchos trabajos, resolver óptimo al minuto puede tardar bastante. Si tarda, sube "Precisión" a 2, 5 o 10 para acelerar (ya no sería exacto al minuto).';
+      } else {
+        elStatus.textContent = 'Resolviendo (óptimo)...';
+      }
+
+      // Ejecuta en el event loop para que se pinte status
+      setTimeout(() => {
+        const t0 = performance.now();
+        const res = solveOptimal(jobs, K, quant);
+        const t1 = performance.now();
+
+        const totals = res.teams.map(t=>t.totalMinutes);
+        const minT = Math.min(...totals);
+        const maxT = Math.max(...totals);
+
+        let out = '';
+        out += `Equipos: ${K}\n`;
+        out += `Trabajos: ${jobs.length}\n`;
+        out += `Makespan óptimo: ${maxT} min (${hhmm(maxT)})\n`;
+        out += `Min total: ${minT} min (${hhmm(minT)})\n`;
+        out += `Diferencia: ${maxT - minT} min (${hhmm(maxT - minT)})\n`;
+        out += `Tiempo de cómputo: ${Math.round(t1 - t0)} ms\n\n`;
+
+        res.teams.forEach((team, idx) => {
+          out += `Equipo ${idx+1} | Total: ${team.totalMinutes} min (${hhmm(team.totalMinutes)})\n`;
+          team.jobs.forEach(j => {
+            out += `  - ${j.name}: ${j.minutes} min (${hhmm(j.minutes)})\n`;
+          });
+          out += `\n`;
+        });
+
+        elOut.textContent = out;
+        elCopyOut.textContent = out;
+        elStatus.innerHTML = '<span class="ok">Listo.</span>';
+      }, 10);
+
+    } catch (e){
+      elStatus.innerHTML = '<span class="bad">Error:</span> ' + (e && e.message ? e.message : String(e));
+    }
+  });
+
+})();
+</script>
 </body>
 </html>
