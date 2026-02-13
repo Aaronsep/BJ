@@ -8,11 +8,9 @@
     :root{
       --bg:#0b0d12;
       --panel:#121623;
-      --panel2:#0f1320;
       --text:#e9eefc;
       --muted:#a9b4d0;
       --line:rgba(255,255,255,.10);
-      --line2:rgba(255,255,255,.14);
       --accent:#7aa2ff;
       --ok:#33d1a0;
       --bad:#ff5d5d;
@@ -28,20 +26,17 @@
       color:var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-    .wrap{ max-width: 1100px; margin: 28px auto; padding: 0 18px 40px; }
-    .top{
-      display:flex; align-items:flex-end; justify-content:space-between; gap:18px; flex-wrap:wrap;
-      margin-bottom: 14px;
-    }
+    .wrap{ max-width: 1200px; margin: 28px auto; padding: 0 18px 40px; }
+    .top{ display:flex; align-items:flex-end; justify-content:space-between; gap:18px; flex-wrap:wrap; margin-bottom: 14px; }
     h1{ margin:0; font-size: 22px; letter-spacing:.2px; }
-    .sub{ margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.35; max-width: 780px; }
+    .sub{ margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.35; max-width: 860px; }
     .pill{
       display:inline-flex; gap:8px; align-items:center;
       padding:8px 10px; border:1px solid var(--line); border-radius:999px;
       background: rgba(255,255,255,.04);
       color: var(--muted); font-size:12px;
     }
-    .grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap:14px; }
+    .grid{ display:grid; grid-template-columns: 1.25fr .75fr; gap:14px; }
     @media (max-width: 980px){ .grid{ grid-template-columns:1fr; } }
 
     .card{
@@ -60,13 +55,10 @@
     .card-h b{ font-size:13px; letter-spacing:.2px; }
     .card-b{ padding: 14px; }
 
-    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .field{
-      display:flex; flex-direction:column; gap:6px;
-      min-width: 160px;
-    }
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+    .field{ display:flex; flex-direction:column; gap:6px; min-width: 160px; }
     label{ font-size:12px; color: var(--muted); }
-    input[type="number"], input[type="text"]{
+    input[type="number"], input[type="text"], select{
       width:100%;
       background: rgba(255,255,255,.05);
       border: 1px solid var(--line);
@@ -76,7 +68,7 @@
       outline:none;
     }
     input::placeholder{ color: rgba(233,238,252,.35); }
-    input:focus{ border-color: rgba(122,162,255,.55); box-shadow: 0 0 0 3px rgba(122,162,255,.18); }
+    input:focus, select:focus{ border-color: rgba(122,162,255,.55); box-shadow: 0 0 0 3px rgba(122,162,255,.18); }
 
     .btn{
       border:1px solid var(--line);
@@ -87,25 +79,14 @@
       cursor:pointer;
       user-select:none;
       transition: transform .04s ease, border-color .15s ease, background .15s ease;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing:.2px;
     }
     .btn:active{ transform: translateY(1px); }
-    .btn.primary{
-      border-color: rgba(122,162,255,.45);
-      background: rgba(122,162,255,.14);
-    }
-    .btn.good{
-      border-color: rgba(51,209,160,.45);
-      background: rgba(51,209,160,.12);
-    }
-    .btn.bad{
-      border-color: rgba(255,93,93,.45);
-      background: rgba(255,93,93,.10);
-    }
-    .btn.icon{
-      width:42px; padding:10px 0; display:inline-grid; place-items:center;
-    }
+    .btn.primary{ border-color: rgba(122,162,255,.45); background: rgba(122,162,255,.14); }
+    .btn.good{ border-color: rgba(51,209,160,.45); background: rgba(51,209,160,.12); }
+    .btn.bad{ border-color: rgba(255,93,93,.45); background: rgba(255,93,93,.10); }
+    .btn.icon{ width:42px; padding:10px 0; display:inline-grid; place-items:center; }
 
     .hint{
       font-size:12px; color: var(--muted); line-height:1.4;
@@ -121,13 +102,11 @@
       color: var(--text);
     }
 
-    .list{
-      display:flex; flex-direction:column; gap:10px;
-      margin-top: 10px;
-    }
+    .list{ display:flex; flex-direction:column; gap:10px; margin-top: 10px; }
+
     .rowItem{
       display:grid;
-      grid-template-columns: 1fr 150px 44px;
+      grid-template-columns: 1fr 170px 160px 44px;
       gap:10px;
       align-items:center;
       padding: 10px;
@@ -135,10 +114,11 @@
       border-radius: 14px;
       background: rgba(0,0,0,.18);
     }
-    @media (max-width: 720px){
+    @media (max-width: 860px){
       .rowItem{ grid-template-columns: 1fr; }
       .rowItem .del{ justify-self:end; }
     }
+
     .mini{ font-size:12px; color: var(--muted); margin-top:8px; }
     .status{ font-size:12px; margin-top:10px; color: var(--muted); }
     .ok{ color: var(--ok); }
@@ -167,7 +147,6 @@
       font-size:12px;
       line-height:1.4;
     }
-
     .footerBtns{ display:flex; gap:10px; flex-wrap:wrap; }
   </style>
 </head>
@@ -175,15 +154,13 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <h1>Balanceador óptimo de trabajos</h1>
+        <h1>Balanceador óptimo de trabajos (con equipo fijo opcional)</h1>
         <div class="sub">
-          Añade trabajos con nombre y duración. Duración aceptada: <code>1.56</code> (horas decimales) o <code>2:25</code> (h:mm).
-          Luego elige K equipos y resuelve.
+          Duración aceptada: <code>1.56</code> (horas decimales) o <code>2:25</code> (h:mm).
+          Si un trabajo debe ir sí o sí a un equipo, elige “Equipo fijo” en ese renglón.
         </div>
       </div>
-      <div class="pill">
-        Óptimo = minimiza el tiempo del equipo más cargado
-      </div>
+      <div class="pill">Óptimo = minimiza el máximo total respetando restricciones</div>
     </div>
 
     <div class="grid">
@@ -206,13 +183,17 @@
               <label>Duración</label>
               <input id="durIn" type="text" placeholder="Ej: 1.56 o 2:25" />
             </div>
-            <div style="align-self:end;">
+            <div class="field" style="min-width:180px;">
+              <label>Equipo fijo (opcional)</label>
+              <select id="fixIn"></select>
+            </div>
+            <div>
               <button id="addBtn2" class="btn primary" type="button">Añadir</button>
             </div>
           </div>
 
           <div class="hint">
-            Tip: si tu duración viene como “7.8” eso significa 7.8 horas (7h 48m). Si quieres 7h 08m usa <code>7:08</code>.
+            Tip: “7.8” = 7.8 horas (7h 48m). Si quieres 7h 08m usa <code>7:08</code>.
           </div>
 
           <div class="list" id="list"></div>
@@ -261,6 +242,7 @@
 
   const elNameIn = $('nameIn');
   const elDurIn = $('durIn');
+  const elFixIn = $('fixIn');
 
   let jobs = [];
   let jobId = 1;
@@ -288,7 +270,6 @@
       return hh*60 + mm;
     }
 
-    // horas decimales
     s = s.replace(',', '.');
     const hours = parseFloat(s);
     if (!Number.isFinite(hours)) throw new Error('Tiempo inválido: ' + s);
@@ -303,8 +284,50 @@
     return `${h}:${String(m).padStart(2,'0')}`;
   }
 
+  function buildFixOptions(K){
+    const opts = [{v:0, t:'Auto'}];
+    for (let i=1;i<=K;i++) opts.push({v:i, t:`Equipo ${i}`});
+    return opts;
+  }
+
+  function fillSelect(selectEl, K, value){
+    selectEl.innerHTML = '';
+    for (const o of buildFixOptions(K)){
+      const op = document.createElement('option');
+      op.value = String(o.v);
+      op.textContent = o.t;
+      if (String(value ?? 0) === String(o.v)) op.selected = true;
+      selectEl.appendChild(op);
+    }
+  }
+
+  function syncAllFixSelects(){
+    const K = Math.max(1, parseInt($('k').value,10) || 1);
+    // input superior
+    fillSelect(elFixIn, K, parseInt(elFixIn.value,10) || 0);
+
+    // selects por fila
+    for (const j of jobs){
+      if (j._fixSelectEl){
+        const current = parseInt(j._fixSelectEl.value,10) || 0;
+        fillSelect(j._fixSelectEl, K, Math.min(current, K));
+        j.fixedTeam = parseInt(j._fixSelectEl.value,10) || 0;
+      } else {
+        // clamp guard
+        j.fixedTeam = Math.min(j.fixedTeam || 0, K);
+      }
+    }
+  }
+
+  $('k').addEventListener('change', () => {
+    syncAllFixSelects();
+    render();
+  });
+
   function render(){
     elList.innerHTML = '';
+
+    const K = Math.max(1, parseInt($('k').value,10) || 1);
 
     jobs.forEach((j) => {
       const row = document.createElement('div');
@@ -322,6 +345,13 @@
       dur.placeholder = 'Duración (1.56 o 2:25)';
       dur.addEventListener('input', () => { j.durRaw = dur.value; });
 
+      const fix = document.createElement('select');
+      j._fixSelectEl = fix;
+      fillSelect(fix, K, Math.min(j.fixedTeam || 0, K));
+      fix.addEventListener('change', () => {
+        j.fixedTeam = parseInt(fix.value,10) || 0;
+      });
+
       const del = document.createElement('button');
       del.className = 'btn icon bad del';
       del.type = 'button';
@@ -334,30 +364,33 @@
 
       row.appendChild(name);
       row.appendChild(dur);
+      row.appendChild(fix);
       row.appendChild(del);
       elList.appendChild(row);
     });
 
-    elCount.textContent = `Trabajos: ${jobs.length}`;
+    elCount.textContent = `Trabajos: ${jobs.length} | Equipos: ${K}`;
   }
 
-  function addJob(name, durRaw){
+  function addJob(name, durRaw, fixedTeam){
     clearError();
     const n = String(name ?? '').trim();
     const d = String(durRaw ?? '').trim();
+    const ft = parseInt(fixedTeam,10) || 0;
+
     if (!n) throw new Error('Falta el nombre');
-    // valida duración al agregar (así no te enteras hasta resolver)
     parseTimeToMinutes(d);
 
-    jobs.push({ id: jobId++, name: n, durRaw: d });
+    jobs.push({ id: jobId++, name: n, durRaw: d, fixedTeam: ft });
     render();
   }
 
   function addFromInputs(){
     try{
-      addJob(elNameIn.value, elDurIn.value);
+      addJob(elNameIn.value, elDurIn.value, elFixIn.value);
       elNameIn.value = '';
       elDurIn.value = '';
+      elFixIn.value = '0';
       elNameIn.focus();
     } catch(e){
       showError(e && e.message ? e.message : String(e));
@@ -366,13 +399,8 @@
 
   $('addBtn').addEventListener('click', addFromInputs);
   $('addBtn2').addEventListener('click', addFromInputs);
-
-  elDurIn.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter') addFromInputs();
-  });
-  elNameIn.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter') elDurIn.focus();
-  });
+  elDurIn.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') addFromInputs(); });
+  elNameIn.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') elDurIn.focus(); });
 
   $('clearBtn').addEventListener('click', () => {
     jobs = [];
@@ -384,45 +412,68 @@
 
   $('demoBtn').addEventListener('click', () => {
     jobs = [
-      {id: jobId++, name:'4567 Dinasty Road', durRaw:'1.56'},
-      {id: jobId++, name:'Cableado cocina', durRaw:'2:15'},
-      {id: jobId++, name:'Pintura recámara', durRaw:'3.10'},
-      {id: jobId++, name:'Limpieza patio', durRaw:'0:45'},
-      {id: jobId++, name:'Instalación lámparas', durRaw:'1:20'},
-      {id: jobId++, name:'Revisión plomería', durRaw:'2.05'},
+      {id: jobId++, name:'4567 Dinasty Road', durRaw:'1.56', fixedTeam:1},
+      {id: jobId++, name:'Cableado cocina', durRaw:'2:15', fixedTeam:0},
+      {id: jobId++, name:'Pintura recámara', durRaw:'3.10', fixedTeam:2},
+      {id: jobId++, name:'Limpieza patio', durRaw:'0:45', fixedTeam:0},
+      {id: jobId++, name:'Instalación lámparas', durRaw:'1:20', fixedTeam:0},
+      {id: jobId++, name:'Revisión plomería', durRaw:'2.05', fixedTeam:0},
     ];
     render();
     clearError();
   });
 
-  function solveOptimal(jobsMinutes, K, quant){
+  // Solver óptimo con restricciones: fixedTeam = 0 (auto) o 1..K (equipo fijo)
+  function solveOptimalWithFixed(jobsMinutes, K, quant){
     const q = Math.max(1, quant|0);
 
-    const minMap = new Map();
-    for (const j of jobsMinutes) minMap.set(j.name, j.minutes);
+    // Split: fijos y libres
+    const fixedLoads = Array(K).fill(0);
+    const fixedAssign = Array.from({length: K}, ()=>[]);
+    const free = [];
 
-    const items = jobsMinutes
-      .map(j => ({name: j.name, w: Math.max(1, Math.round(j.minutes / q))}))
+    for (const j of jobsMinutes){
+      if (j.fixedTeam && j.fixedTeam >= 1 && j.fixedTeam <= K){
+        const idx = j.fixedTeam - 1;
+        fixedLoads[idx] += j.minutes;
+        fixedAssign[idx].push({name: j.name, minutes: j.minutes});
+      } else {
+        free.push(j);
+      }
+    }
+
+    // Cuantiza solo libres para el B&B (pero cargas base se traducen a "w" también)
+    const baseW = fixedLoads.map(m => Math.round(m / q));
+    // Importante: mantener consistencia: si baseW se queda 0 pero hay minutos, ajuste
+    for (let i=0;i<K;i++){
+      if (fixedLoads[i] > 0 && baseW[i] === 0) baseW[i] = 1;
+    }
+
+    const freeItems = free
+      .map(j => ({name: j.name, minutes: j.minutes, w: Math.max(1, Math.round(j.minutes / q))}))
       .sort((a,b)=>b.w-a.w);
 
-    const n = items.length;
-    const total = items.reduce((s,x)=>s+x.w,0);
+    const n = freeItems.length;
 
-    // Upper bound inicial (LPT)
-    const loads0 = Array(K).fill(0);
+    // upper bound inicial con greedy sobre cargas base (en W)
+    const loads0 = baseW.slice();
     const assign0 = Array.from({length: K}, ()=>[]);
-    for (const it of items){
+    for (const it of freeItems){
       let best = 0;
       for (let i=1;i<K;i++) if (loads0[i] < loads0[best]) best = i;
       loads0[best] += it.w;
       assign0[best].push(it);
     }
-    let bestMakespan = Math.max(...loads0);
+    let bestMakespanW = Math.max(...loads0);
     let bestAssign = assign0.map(a=>a.slice());
 
-    const avgLB = Math.ceil(total / K);
+    // lower bound: max(baseW max, ceil((sumFree + sumBase)/K))
+    const sumBase = baseW.reduce((s,x)=>s+x,0);
+    const sumFree = freeItems.reduce((s,x)=>s+x.w,0);
+    const avgLB = Math.ceil((sumBase + sumFree) / K);
+    const baseMax = Math.max(...baseW);
 
-    const loads = Array(K).fill(0);
+    const loads = baseW.slice();
     const assign = Array.from({length: K}, ()=>[]);
 
     const seen = new Set();
@@ -434,22 +485,22 @@
     function dfs(idx){
       if (idx === n){
         const mk = Math.max(...loads);
-        if (mk < bestMakespan){
-          bestMakespan = mk;
+        if (mk < bestMakespanW){
+          bestMakespanW = mk;
           bestAssign = assign.map(a=>a.slice());
         }
         return;
       }
 
       const currentMax = Math.max(...loads);
-      const lb = Math.max(avgLB, currentMax);
-      if (lb >= bestMakespan) return;
+      const lb = Math.max(avgLB, baseMax, currentMax);
+      if (lb >= bestMakespanW) return;
 
       const k = key(idx);
       if (seen.has(k)) return;
       seen.add(k);
 
-      const it = items[idx];
+      const it = freeItems[idx];
 
       const triedLoads = new Set();
       const order = Array.from({length: K}, (_,i)=>i).sort((a,b)=>loads[a]-loads[b]);
@@ -460,7 +511,7 @@
         triedLoads.add(L);
 
         const newLoad = L + it.w;
-        if (newLoad >= bestMakespan) continue;
+        if (newLoad >= bestMakespanW) continue;
 
         loads[i] = newLoad;
         assign[i].push(it);
@@ -470,18 +521,27 @@
         assign[i].pop();
         loads[i] = L;
 
-        if (L === 0) break; // simetría: equipos vacíos equivalentes
+        // simetría: si este equipo está exactamente en carga base y no funcionó, no pruebes otros iguales
+        // (ya cubierto por triedLoads)
       }
     }
 
     dfs(0);
 
-    const teams = bestAssign.map(team => {
-      const jobsTeam = team.map(it => ({ name: it.name, minutes: minMap.get(it.name) ?? it.w*q }));
-      jobsTeam.sort((a,b)=>b.minutes-a.minutes);
-      const sumMin = jobsTeam.reduce((s,x)=>s+x.minutes,0);
-      return { jobs: jobsTeam, totalMinutes: sumMin };
-    });
+    // Construye resultado final en minutos (reales), uniendo fijos + libres
+    const teams = Array.from({length: K}, (_,i)=>({
+      jobs: [...fixedAssign[i]],
+      totalMinutes: fixedLoads[i],
+    }));
+
+    // agrega libres según bestAssign
+    for (let i=0;i<K;i++){
+      for (const it of bestAssign[i]){
+        teams[i].jobs.push({name: it.name, minutes: it.minutes});
+        teams[i].totalMinutes += it.minutes;
+      }
+      teams[i].jobs.sort((a,b)=>b.minutes-a.minutes);
+    }
 
     return { teams };
   }
@@ -496,24 +556,28 @@
       if (!Number.isFinite(quant) || quant < 1) throw new Error('Precisión inválida');
       if (jobs.length === 0) throw new Error('No hay trabajos');
 
-      // materializa minutos y valida todo
+      // clamp selects
+      syncAllFixSelects();
+
       const jobsMinutes = jobs.map((j, idx) => {
         const name = String(j.name ?? '').trim();
         if (!name) throw new Error(`Trabajo ${idx+1}: falta nombre`);
         const minutes = parseTimeToMinutes(j.durRaw);
-        return { name, minutes };
+        const fixedTeam = Math.min(Math.max(parseInt(j.fixedTeam,10) || 0, 0), K);
+        return { name, minutes, fixedTeam };
       });
 
+      const fixedCount = jobsMinutes.filter(x => x.fixedTeam > 0).length;
       if (jobsMinutes.length > 90 && quant === 1){
-        elStatus.innerHTML = `<span class="badTxt">Advertencia:</span> con muchos trabajos, óptimo al minuto puede tardar. Sube Precisión a 5 o 10 si se tarda.`;
+        elStatus.innerHTML = `<span class="badTxt">Advertencia:</span> muchos trabajos y óptimo al minuto puede tardar. Sube Precisión a 5 o 10 si se tarda.`;
       } else {
-        elStatus.textContent = 'Resolviendo (óptimo)...';
+        elStatus.textContent = fixedCount ? `Resolviendo (óptimo) con ${fixedCount} fijo(s)...` : 'Resolviendo (óptimo)...';
       }
 
       setTimeout(() => {
         try{
           const t0 = performance.now();
-          const res = solveOptimal(jobsMinutes, K, quant);
+          const res = solveOptimalWithFixed(jobsMinutes, K, quant);
           const t1 = performance.now();
 
           const totals = res.teams.map(t=>t.totalMinutes);
@@ -523,7 +587,7 @@
           let out = '';
           out += `Equipos: ${K}\n`;
           out += `Trabajos: ${jobsMinutes.length}\n`;
-          out += `Makespan óptimo: ${maxT} min (${hhmm(maxT)})\n`;
+          out += `Makespan óptimo (con restricciones): ${maxT} min (${hhmm(maxT)})\n`;
           out += `Min total: ${minT} min (${hhmm(minT)})\n`;
           out += `Diferencia: ${maxT - minT} min (${hhmm(maxT - minT)})\n`;
           out += `Tiempo de cómputo: ${Math.round(t1 - t0)} ms\n\n`;
@@ -561,8 +625,9 @@
     }
   });
 
-  // 1 fila inicial para guiar
-  jobs = [{ id: jobId++, name: '', durRaw: '' }];
+  // init
+  fillSelect(elFixIn, 2, 0);
+  jobs = [{ id: jobId++, name: '', durRaw: '', fixedTeam: 0 }];
   render();
 })();
 </script>
