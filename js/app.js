@@ -80,6 +80,7 @@ export function initApp() {
   let addressCatalog = [];
   let suggestionItems = [];
   let suggestionActiveIndex = -1;
+  let latestPlanSnapshot = null;
   let confirmResolver = null;
   let confirmPreviouslyFocused = null;
 
@@ -109,6 +110,208 @@ export function initApp() {
   function clearError() {
     elErr.style.display = "none";
     elErr.textContent = "";
+  }
+
+  function clearPlanOutput() {
+    elOut.innerHTML = "";
+    delete elOut.dataset.copyText;
+  }
+
+  function sanitizePlanSnapshot(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const teamCount = Math.max(1, parseInt(raw.teamCount, 10) || 1);
+    const jobCount = Math.max(0, parseInt(raw.jobCount, 10) || 0);
+    const minMinutes = Math.max(0, parseInt(raw.minMinutes, 10) || 0);
+    const maxMinutes = Math.max(0, parseInt(raw.maxMinutes, 10) || 0);
+    const gapMinutes = Math.max(0, parseInt(raw.gapMinutes, 10) || 0);
+    const teamsRaw = Array.isArray(raw.teams) ? raw.teams : [];
+
+    const teams = teamsRaw
+      .map((team, idx) => {
+        const totalMinutes = Math.max(0, parseInt(team && team.totalMinutes, 10) || 0);
+        const jobsRaw = Array.isArray(team && team.jobs) ? team.jobs : [];
+        const jobsClean = jobsRaw
+          .map((job) => ({
+            name: String((job && job.name) || "").trim(),
+            minutes: Math.max(0, parseInt(job && job.minutes, 10) || 0),
+          }))
+          .filter((job) => job.name && job.minutes > 0);
+        return {
+          teamIndex: idx + 1,
+          totalMinutes,
+          jobs: jobsClean,
+        };
+      })
+      .slice(0, teamCount);
+
+    if (!teams.length) return null;
+
+    return {
+      teamCount,
+      jobCount,
+      minMinutes,
+      maxMinutes,
+      gapMinutes,
+      teams,
+    };
+  }
+
+  function buildPlanSnapshot(result, teamCount, jobCount) {
+    const teams = Array.isArray(result.teams) ? result.teams : [];
+    const totals = teams.map((team) => Math.max(0, parseInt(team.totalMinutes, 10) || 0));
+    const minMinutes = totals.length ? Math.min(...totals) : 0;
+    const maxMinutes = totals.length ? Math.max(...totals) : 0;
+
+    return sanitizePlanSnapshot({
+      teamCount,
+      jobCount,
+      minMinutes,
+      maxMinutes,
+      gapMinutes: maxMinutes - minMinutes,
+      teams: teams.map((team, idx) => ({
+        teamIndex: idx + 1,
+        totalMinutes: team.totalMinutes,
+        jobs: (Array.isArray(team.jobs) ? team.jobs : []).map((job) => ({
+          name: job.name,
+          minutes: job.minutes,
+        })),
+      })),
+    });
+  }
+
+  function buildPlanText(snapshot) {
+    if (!snapshot) return "";
+    let out = "";
+    out += `Plan summary\n`;
+    out += `Teams: ${snapshot.teamCount}\n`;
+    out += `Jobs: ${snapshot.jobCount}\n`;
+    out += `Longest team time: ${snapshot.maxMinutes} min (${hhmm(snapshot.maxMinutes)})\n`;
+    out += `Shortest team time: ${snapshot.minMinutes} min (${hhmm(snapshot.minMinutes)})\n`;
+    out += `Gap: ${snapshot.gapMinutes} min (${hhmm(snapshot.gapMinutes)})\n`;
+    out += `\n`;
+
+    snapshot.teams.forEach((team, idx) => {
+      out += `Team ${idx + 1} | Total: ${team.totalMinutes} min (${hhmm(team.totalMinutes)})\n`;
+      team.jobs.forEach((job) => {
+        out += `  - ${job.name} - ${job.minutes} min (${hhmm(job.minutes)})\n`;
+      });
+      out += "\n";
+    });
+
+    return out.trimEnd();
+  }
+
+  function renderPlanView(snapshot) {
+    if (!snapshot) {
+      clearPlanOutput();
+      return;
+    }
+
+    const planText = buildPlanText(snapshot);
+    elOut.innerHTML = "";
+    elOut.dataset.copyText = planText;
+
+    const view = document.createElement("div");
+    view.className = "planView";
+
+    const summary = document.createElement("section");
+    summary.className = "planSummary";
+
+    const stats = document.createElement("div");
+    stats.className = "planStats";
+
+    const statItems = [
+      { label: "Teams", value: String(snapshot.teamCount) },
+      { label: "Jobs", value: String(snapshot.jobCount) },
+      { label: "Gap", value: `${snapshot.gapMinutes}m` },
+      { label: "Range", value: `${snapshot.minMinutes}-${snapshot.maxMinutes}m` },
+    ];
+
+    for (const stat of statItems) {
+      const statCard = document.createElement("div");
+      statCard.className = "planStat";
+      const statLabel = document.createElement("div");
+      statLabel.className = "planStatLabel";
+      statLabel.textContent = stat.label;
+      const statValue = document.createElement("div");
+      statValue.className = "planStatValue";
+      statValue.textContent = stat.value;
+      statCard.appendChild(statLabel);
+      statCard.appendChild(statValue);
+      stats.appendChild(statCard);
+    }
+
+    summary.appendChild(stats);
+    view.appendChild(summary);
+
+    const teamsWrap = document.createElement("section");
+    teamsWrap.className = "planTeams";
+
+    snapshot.teams.forEach((team, idx) => {
+      const teamCard = document.createElement("article");
+      teamCard.className = "planTeam";
+
+      const teamHead = document.createElement("div");
+      teamHead.className = "planTeamHead";
+
+      const teamName = document.createElement("div");
+      teamName.className = "planTeamName";
+      teamName.textContent = `Team ${idx + 1}`;
+      const teamTotal = document.createElement("div");
+      teamTotal.className = "planTeamTotal";
+      teamTotal.textContent = `${team.totalMinutes} min (${hhmm(team.totalMinutes)})`;
+      teamHead.appendChild(teamName);
+      teamHead.appendChild(teamTotal);
+
+      const list = document.createElement("ul");
+      list.className = "planJobList";
+
+      if (!team.jobs.length) {
+        const empty = document.createElement("li");
+        empty.className = "planEmpty";
+        empty.textContent = "No jobs assigned.";
+        list.appendChild(empty);
+      } else {
+        team.jobs.forEach((job) => {
+          const item = document.createElement("li");
+          item.className = "planJobItem";
+
+          const jobName = document.createElement("span");
+          jobName.className = "planJobName";
+          jobName.textContent = job.name;
+          jobName.title = job.name;
+          item.title = job.name;
+
+          const jobTime = document.createElement("span");
+          jobTime.className = "planJobTime";
+          jobTime.textContent = `${job.minutes} min (${hhmm(job.minutes)})`;
+
+          item.appendChild(jobName);
+          item.appendChild(jobTime);
+          list.appendChild(item);
+        });
+      }
+
+      teamCard.appendChild(teamHead);
+      teamCard.appendChild(list);
+      teamsWrap.appendChild(teamCard);
+    });
+
+    view.appendChild(teamsWrap);
+    elOut.appendChild(view);
+  }
+
+  function renderPlanTextFallback(text) {
+    if (!String(text || "").trim()) {
+      clearPlanOutput();
+      return;
+    }
+    elOut.innerHTML = "";
+    const plain = document.createElement("div");
+    plain.className = "planPlainText";
+    plain.textContent = text;
+    elOut.appendChild(plain);
+    elOut.dataset.copyText = text;
   }
 
   function isConfirmModalOpen() {
@@ -394,6 +597,7 @@ export function initApp() {
       quant: Math.max(1, parseInt(entry.quant, 10) || 1),
       outputText: String(entry.outputText || ""),
       statusText: String(entry.statusText || ""),
+      planSnapshot: sanitizePlanSnapshot(entry.planSnapshot),
     };
   }
 
@@ -491,8 +695,9 @@ export function initApp() {
       jobs: jobs.map(normalizeJobForSave),
       k: currentTeamCount(),
       quant: currentQuant(),
-      outputText: elOut.textContent || "",
+      outputText: elOut.dataset.copyText || elOut.textContent || "",
       statusText: elStatus.textContent || "",
+      planSnapshot: latestPlanSnapshot || null,
     };
   }
 
@@ -549,7 +754,12 @@ export function initApp() {
     syncAllFixSelects();
     render();
 
-    elOut.textContent = entry.outputText || "";
+    latestPlanSnapshot = entry.planSnapshot || null;
+    if (latestPlanSnapshot) {
+      renderPlanView(latestPlanSnapshot);
+    } else {
+      renderPlanTextFallback(entry.outputText || "");
+    }
     setStatus(`Check opened (${formatLocalDateTime(entry.createdAt)}).`, "ok");
     clearError();
     renderHistory();
@@ -971,7 +1181,8 @@ export function initApp() {
 
   function solve() {
     clearError();
-    elOut.textContent = "";
+    clearPlanOutput();
+    latestPlanSnapshot = null;
 
     try {
       const teamCount = parseInt(elK.value, 10);
@@ -1004,32 +1215,14 @@ export function initApp() {
       setTimeout(() => {
         try {
           const result = solveOptimalWithFixed(jobsMinutes, teamCount, quant);
-
-          const totals = result.teams.map((team) => team.totalMinutes);
-          const minT = Math.min(...totals);
-          const maxT = Math.max(...totals);
-
-          let out = "";
-          out += `Plan summary\n`;
-          out += `Teams: ${teamCount}\n`;
-          out += `Jobs: ${jobsMinutes.length}\n`;
-          out += `Longest team time: ${maxT} min (${hhmm(maxT)})\n`;
-          out += `Shortest team time: ${minT} min (${hhmm(minT)})\n`;
-          out += `Gap: ${maxT - minT} min (${hhmm(maxT - minT)})\n`;
-          out += `\n`;
-
-          result.teams.forEach((team, idx) => {
-            out += `Team ${idx + 1} | Total: ${team.totalMinutes} min (${hhmm(team.totalMinutes)})\n`;
-            team.jobs.forEach((job) => {
-              out += `  - ${job.name} - ${job.minutes} min (${hhmm(job.minutes)})\n`;
-            });
-            out += "\n";
-          });
-
-          elOut.textContent = out;
+          const snapshot = buildPlanSnapshot(result, teamCount, jobsMinutes.length);
+          latestPlanSnapshot = snapshot;
+          renderPlanView(snapshot);
           setStatus("Plan ready.", "ok");
           saveCheckpoint("Planned");
         } catch (error) {
+          latestPlanSnapshot = null;
+          clearPlanOutput();
           setStatus("We could not create a plan.", "bad");
           showError(getErrorMessage(error));
           saveCheckpoint("Plan failed");
@@ -1046,7 +1239,7 @@ export function initApp() {
 
   async function copyResult() {
     try {
-      const text = elOut.textContent || "";
+      const text = elOut.dataset.copyText || elOut.textContent || "";
       if (!text.trim()) throw new Error("Create a plan first");
       await navigator.clipboard.writeText(text);
       setStatus("Plan copied.", "ok");
@@ -1065,11 +1258,12 @@ export function initApp() {
   $("clearBtn").addEventListener("click", () => {
     jobs = [];
     editingCheckpointId = null;
+    latestPlanSnapshot = null;
     if (!elHistorySelect.disabled) {
       elHistorySelect.value = "";
     }
     render();
-    elOut.textContent = "";
+    clearPlanOutput();
     setStatus("");
     clearError();
     hideNameSuggestions();
@@ -1077,6 +1271,7 @@ export function initApp() {
   });
   $("demoBtn").addEventListener("click", () => {
     editingCheckpointId = null;
+    latestPlanSnapshot = null;
     jobs = [
       { id: jobId++, name: "4567 Dynasty Road", durRaw: "1.5", fixedTeam: 1 },
       { id: jobId++, name: "Kitchen wiring", durRaw: "2:15", fixedTeam: 0 },
@@ -1086,6 +1281,7 @@ export function initApp() {
       { id: jobId++, name: "Plumbing check", durRaw: "2.1", fixedTeam: 0 },
     ];
     render();
+    clearPlanOutput();
     clearError();
     hideNameSuggestions();
     scheduleDraftSave();
